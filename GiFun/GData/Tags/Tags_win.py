@@ -112,7 +112,7 @@ def clean(l):
 			new.append(i)
 	return new
 
-def addtag(tags,v_path):
+def addtag(tags,v_path,do=True):
 	Tags = tags.split('.')
 	f_list = clean(os.listdir('..')) #获取文件夹内所有文件名
 	c_list = []
@@ -127,23 +127,25 @@ def addtag(tags,v_path):
 		# print(i)
 	# print('*'*50)
 	print('\n')
-	if f_list:
-		#搬运
-		for t in range(len(f_list)):	
-			old_file_name = '\\'.join(os.getcwd().split('\\')[:-1]) + '\\' + f_list[t]
-			percent = int(((t+1)/len(f_list)*100)/5)
-			perc = '★'*percent+'☆'*(20-percent)
-			
-			# print('\r进度【'+str(percent)+'】','| 提取：',old_file_name[41:])
-			print('\r进度【'+perc+'】',end='')
-			new_file_name = os.getcwd() + '\\' + v_path+'\\'+f_list[t]		#创建快捷方式必须使用绝对路径！！！！！！！！！
-			# print('source:',old_file_name)
-			# print('goal:',new_file_name)
-			set_shortcut(old_file_name,new_file_name)#创建快捷方式
-			# copyfile(old_file_name,new_file_name)
-	print('\n')
+	if do == True:
+		if f_list:
+			#搬运
+			for t in range(len(f_list)):	
+				old_file_name = '\\'.join(os.getcwd().split('\\')[:-1]) + '\\' + f_list[t]
+				percent = int(((t+1)/len(f_list)*100)/5)
+				perc = '★'*percent+'☆'*(20-percent)
+				
+				# print('\r进度【'+str(percent)+'】','| 提取：',old_file_name[41:])
+				print('\r进度【'+perc+'】',end='')
+				new_file_name = os.getcwd() + '\\' + v_path+'\\'+f_list[t]		#创建快捷方式必须使用绝对路径！！！！！！！！！
+				# print('source:',old_file_name)
+				# print('goal:',new_file_name)
+				set_shortcut(old_file_name,new_file_name)#创建快捷方式
+				# copyfile(old_file_name,new_file_name)
+		print('\n')
+	return f_list
 
-def ortag(tags,v_path):
+def ortag(tags,v_path,do=True):
 	Tags = tags.split('.')
 	f_list = clean(os.listdir('..'))#获取源文件夹内所有文件名
 	c_list = []
@@ -155,19 +157,21 @@ def ortag(tags,v_path):
 	f_list = c_list[:]
 	
 	print('\n')
-	if f_list:
-		#搬运
-		for t in range(len(f_list)):	
-			old_file_name = '\\'.join(os.getcwd().split('\\')[:-1]) + '\\' + f_list[t]
-			# print('进度【'+str(t+1)+'/'+str(len(f_list))+'】','| 提取：',old_file_name[41:])
-			percent = int(((t+1)/len(f_list)*100)/5)
-			perc = '★'*percent+'☆'*(20-percent)
-			
-			print('\r进度【'+perc+'】',end='')
-			new_file_name = os.getcwd() + '\\' + v_path+'\\'+f_list[t]
-			set_shortcut(old_file_name,new_file_name+'.lnk')#创建快捷方式
-			# copyfile(old_file_name,new_file_name)
-	print('\n')
+	if do == True:
+		if f_list:
+			#搬运
+			for t in range(len(f_list)):	
+				old_file_name = '\\'.join(os.getcwd().split('\\')[:-1]) + '\\' + f_list[t]
+				# print('进度【'+str(t+1)+'/'+str(len(f_list))+'】','| 提取：',old_file_name[41:])
+				percent = int(((t+1)/len(f_list)*100)/5)
+				perc = '★'*percent+'☆'*(20-percent)
+				
+				print('\r进度【'+perc+'】',end='')
+				new_file_name = os.getcwd() + '\\' + v_path+'\\'+f_list[t]
+				set_shortcut(old_file_name,new_file_name+'.lnk')#创建快捷方式
+				# copyfile(old_file_name,new_file_name)
+		print('\n')
+	return f_list
 
 def andget(tags,v_path):
 	Tags = tags.split('.')
@@ -219,26 +223,27 @@ def round(tag,f_list):
 			f_list.remove(file_name)
 			round(tag,f_list)
 			
-def minustag(tags,v_path):
+def minustag(tags,v_path,do=True):
 	Tags = tags.split('.')
 	f_list = clean(os.listdir('..'))#获取源文件夹内所有文件名
 	c_list = f_list[:]
 	for tag in Tags:	#一个一个目标标签来
 		round(tag,f_list)
-	
 	print('\n')
-	if f_list:
-		#搬运
-		for t in range(len(f_list)):	
-			old_file_name = '\\'.join(os.getcwd().split('\\')[:-1]) + '\\' + f_list[t]
-			# print('进度【'+str(t+1)+'/'+str(len(f_list))+'】','| 提取：',old_file_name[41:])
-			percent = int(((t+1)/len(f_list)*100)/5)
-			perc = '★'*percent+'☆'*(20-percent)
-			
-			print('\r进度【'+perc+'】',end='')
-			new_file_name = os.getcwd() + '\\' + v_path+'\\'+f_list[t]
-			set_shortcut(old_file_name,new_file_name+'.lnk')#创建快捷方式
-	print('\n')
+	if do == True:
+		if f_list:
+			#搬运
+			for t in range(len(f_list)):	
+				old_file_name = '\\'.join(os.getcwd().split('\\')[:-1]) + '\\' + f_list[t]
+				# print('进度【'+str(t+1)+'/'+str(len(f_list))+'】','| 提取：',old_file_name[41:])
+				percent = int(((t+1)/len(f_list)*100)/5)
+				perc = '★'*percent+'☆'*(20-percent)
+				
+				print('\r进度【'+perc+'】',end='')
+				new_file_name = os.getcwd() + '\\' + v_path+'\\'+f_list[t]
+				set_shortcut(old_file_name,new_file_name+'.lnk')#创建快捷方式
+		print('\n')
+	return f_list
 
 def new(l_path,new_tag):
 	
@@ -357,7 +362,48 @@ def getdirsize(dir):
 		size += sum([getsize(join(root, name)) for name in files])
 	return size
 
+def allsize(opath):
+	filelist = clean(os.listdir(opath))
+	for i in range(15):
+		size = os.path.getsize(os.path.join(opath,filelist[i]))
+		if size > 1024**2:
+			print('%s >>> %.2f M'%(filelist[i].split('.')[-2],size/1024/1024))
+		elif size > 1024:
+			print('%s >>> %.2f K'%(filelist[i].split('.')[-2],size/1024))
+		else:
+			print('%s >>> %d B'%(filelist[i].split('.')[-2],size))
 
+def size(filelist,s,m='=',do=0):
+	result = []
+	if s[-1] == 'k':
+		ss = int(s[:-1]) * 1024
+	elif s[-1] == 'm':
+		ss = int(s[:-1]) * 1024 * 1024
+	for i in range(len(filelist)):
+		size = os.path.getsize(os.path.join('\\'.join(os.getcwd().split('\\')[:-1]),filelist[i]))
+		if m == '=':
+			if size == ss:
+				result.append(filelist[i])
+		elif m == '>':
+			if size >= ss:
+				result.append(filelist[i])
+		elif m == '<':
+			if size <= ss:
+				result.append(filelist[i])
+	print('\n')
+	if do == True:
+		if result:
+			#搬运
+			for t in range(len(result)):	
+				old_file_name = '\\'.join(os.getcwd().split('\\')[:-1]) + '\\' + result[t]
+				percent = int(((t+1)/len(result)*100)/5)
+				perc = '★'*percent+'☆'*(20-percent)
+				
+				print('\r进度【'+perc+'】',end='')
+				new_file_name = os.getcwd() + '\\' + view_path+'\\'+result[t]
+				set_shortcut(old_file_name,new_file_name+'.lnk')#创建快捷方式
+		print('\n')
+	return result
 		
 def v_switch(n):
 	if n == '0':
@@ -505,11 +551,12 @@ mode = input('模式：')
 ########
 # mode = 'test'
 while mode != 'q':
+	md = mode.split(' ')
 	try:
 		if mode == 'test':
-			f_list = clean(os.listdir('..'))
-			HS = tag_txt
-			find_id(tag_txt,f_list)
+			s = tag_txt
+			r = size('\\'.join(os.getcwd().split('\\')[:-1]),s,m='>')
+			print(len(r))
 		elif mode == 'cg':
 			print('请选择缓存目录：')
 			print('0=>cash\\cash0')
@@ -522,19 +569,60 @@ while mode != 'q':
 			help()
 		elif mode == 's':
 			os.system('start PicFlow.py')
-		elif mode == '-':
-			clear_cash(view_path)
-			minustag(tag_txt,view_path)
-			os.startfile(view_path)
-		elif mode == '+':
-			clear_cash(view_path)
-			addtag(tag_txt,view_path)
-			os.startfile(view_path)
+		elif md[0] == 'size':
+			filelist = clean(os.listdir('\\'.join(os.getcwd().split('\\')[:-1])))
+			if len(md) == 1:
+				s = tag_txt
+				r = size(filelist,s,m='>')
+				print(len(r))
+			elif len(md) > 2:
+				# 'size + >'
+				s = tag_txt.split(' ')[0]
+				try:
+					t = tag_txt.split(' ')[1]
+					if md[1] == '+':
+						filelist = addtag(t,view_path,do=0)
+					elif md[1] == '-':
+						filelist = minustag(t,view_path,do=0)
+					elif md[1] == '/':
+						filelist = ortag(t,view_path,do=0)
+				except:
+					# 没有指定标签要求
+					pass
+				
+				if md[-1] == 'do':
+					r = size(filelist,s,m=md[2],do=True)
+				else:
+					r = size(filelist,s,m=md[2])
+				print(len(r))
+		elif md[0] == '-':
+			if len(md) == 1:
+				clear_cash(view_path)
+				minustag(tag_txt,view_path)
+				os.startfile(view_path)
+			else:
+				if md[1] == 'c':
+					result = minustag(tag_txt,view_path,do=0)
+					print('符合条件的结果数：%d'%len(result))
+		elif md[0] == '+':
+			if len(md) == 1:
+				clear_cash(view_path)
+				addtag(tag_txt,view_path)
+				os.startfile(view_path)
+			else:
+				if md[1] == 'c':
+					result = addtag(tag_txt,view_path,do=0)
+					print('符合条件的结果数：%d'%len(result))
 			
-		elif mode == '/':
-			clear_cash(view_path)
-			ortag(tag_txt,view_path)
-			os.startfile(view_path)
+		elif md[0] == '/':
+			if len(md) == 1:
+				clear_cash(view_path)
+				ortag(tag_txt,view_path)
+				os.startfile(view_path)
+			else:
+				if md[1] == 'c':
+					result = ortag(tag_txt,view_path,do=0)
+					print('符合条件的结果数：%d'%len(result))
 		elif mode == 'new':
 			new(view_path,tag_txt)
 			clear_cash(view_path)
