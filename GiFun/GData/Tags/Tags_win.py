@@ -26,6 +26,9 @@ import random
 from PIL import Image
 import pyperclip
 from bs4 import BeautifulSoup
+from aip import AipFace
+import base64
+
 sys.setrecursionlimit(100000)
 
 ## 读取配置文件 ##
@@ -526,8 +529,30 @@ def find_id(HS,flist):
 		print('人……人家没有找到……')
 	print("序号是",i)
 			
-
-	
+def face(picpath):
+	APP_ID = '15897329'
+	API_KEY = 'xtNaN8HBQ7rSr9L0R4R8OmVj'
+	SECRET_KEY = 'qtk2DUfSFPGFbqw007mSuLdgEMECtQOn'
+	client = AipFace(APP_ID, API_KEY, SECRET_KEY)
+	with open(picpath,"rb") as f:
+		base64_data = base64.b64encode(f.read())
+	image = str(base64_data,'utf-8')
+	imageType = "BASE64"
+	client.detect(image, imageType)
+	options = {}
+	options["face_field"] = "age,beauty,gender,race,quality,facetype"
+	options["max_face_num"] = 1
+	options["face_type"] = "LIVE"
+	result = client.detect(image, imageType, options)
+	try:
+		gender = result['result']['face_list'][0]['gender']['type']
+		age = result['result']['face_list'][0]['age']
+		beauty = result['result']['face_list'][0]['beauty']
+	except:
+		gender = '未识别到人脸'
+		age = '未识别到人脸'
+		beauty = '未识别到人脸'
+	return [gender,age,beauty]
 	
 '''正文'''
 '''============================================'''
@@ -555,8 +580,14 @@ while mode != 'q':
 	try:
 		if mode == 'test':
 			s = tag_txt
-			r = size('\\'.join(os.getcwd().split('\\')[:-1]),s,m='>')
-			print(len(r))
+			p = '\\'.join(os.getcwd().split('\\')[:-1])
+			flist = clean(os.listdir(p))
+			for f in flist:
+				type = f.split('.')[-1]
+				if type.lower() != type:
+					print('>>>'+f)
+					# os.rename(p+'\\'+f,p+'\\'+f.lower())
+			# print(flist)
 		elif mode == 'cg':
 			print('请选择缓存目录：')
 			print('0=>cash\\cash0')
@@ -604,6 +635,12 @@ while mode != 'q':
 				if md[1] == 'c':
 					result = minustag(tag_txt,view_path,do=0)
 					print('符合条件的结果数：%d'%len(result))
+				elif md[1] == 'face':
+					p = '\\'.join(os.getcwd().split('\\')[:-1])
+					result = minustag(tag_txt,view_path,do=0)
+					for f in result:
+						yan = face(p+'\\'+f)
+						print(f.split('.')[-2],'>>>',yan[-1])
 		elif md[0] == '+':
 			if len(md) == 1:
 				clear_cash(view_path)
@@ -613,7 +650,12 @@ while mode != 'q':
 				if md[1] == 'c':
 					result = addtag(tag_txt,view_path,do=0)
 					print('符合条件的结果数：%d'%len(result))
-			
+				elif md[1] == 'face':
+					p = '\\'.join(os.getcwd().split('\\')[:-1])
+					result = addtag(tag_txt,view_path,do=0)
+					for f in result:
+						yan = face(p+'\\'+f)
+						print(f.split('.')[-2],'>>>',yan[-1])
 		elif md[0] == '/':
 			if len(md) == 1:
 				clear_cash(view_path)
@@ -623,6 +665,11 @@ while mode != 'q':
 				if md[1] == 'c':
 					result = ortag(tag_txt,view_path,do=0)
 					print('符合条件的结果数：%d'%len(result))
+				p = '\\'.join(os.getcwd().split('\\')[:-1])
+					result = ortag(tag_txt,view_path,do=0)
+					for f in result:
+						yan = face(p+'\\'+f)
+						print(f.split('.')[-2],'>>>',yan[-1])
 		elif mode == 'new':
 			new(view_path,tag_txt)
 			clear_cash(view_path)
@@ -1214,8 +1261,12 @@ while mode != 'q':
 			print('#'*30)
 			print('##########重命名完成！##########')
 			print('#'*30)
+		
+		
+		
 		else:
 			print('\n...\n\n')
+		
 	except Exception as e:
 		print(e.args)
 	print('\n'*2)
