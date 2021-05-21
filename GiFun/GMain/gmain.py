@@ -6,7 +6,6 @@ import os
 import sys
 import pyperclip
 import random
-import pygame
 import time
 import datetime
 import re
@@ -14,12 +13,17 @@ from bs4 import BeautifulSoup
 from mutagen.mp3 import MP3
 import csv
 import logging
+from mutagen.mp3 import MP3
+# from pydub import AudioSegment
+
 # 自建库
 sys.path.append('../GHuman')
 from ChatMe import chatme
-from TTS import Ali_TTS as sp
+import Ali_TTS as tts
+import ghuman
 sys.path.append('../GData')
 from Spider import trans_yzdc as trans
+from Spider import spider
 logging.getLogger("requests").setLevel(logging.WARNING)
 os.system('color 70')
 
@@ -39,30 +43,17 @@ def a(tag):
 	return r
 
 
+
 def kill_biaodian(s):
 	# 去掉所有标点
 	punc = '~`!#$%^&*()_+-=|\';“”:/.,?><~·！@#￥%……&*（）——+-=“：’；、。，？》《{}'
 	return re.sub(r"[%s]+" %punc, "",s)
 
-def have_speech(s):
-	# 检测日志中是否已经含有此语音文件，如果有，返回文件名编号
-	have = []
-	name = False
-	with open('tts_recoder.csv','r',encoding='utf-8') as f:
-		rows = f.readlines()[1:]
-	# print('rows:',rows)
-	for b in rows:
-		body = b.split(',')[-1].strip()
-		have.append(kill_biaodian(body))
-	# print('have:',have)
-	if kill_biaodian(s) in have:
-		index = have.index(kill_biaodian(s))
-		name = rows[index].split(',')[0]
-	return name
 	
 def find_file(pan,filename,mode=''):
 	i = 0
 	result = []
+	open_dic = {'py':'C:\\MySoftware\\Notepad++\\notepad++.exe','txt':'C:\\MySoftware\\Notepad++\\notepad++.exe'}
 	if mode == 'full':
 		print('严厉搜索...')
 	else:
@@ -74,13 +65,35 @@ def find_file(pan,filename,mode=''):
 					i = i + 1
 					write = os.path.join(root, file)
 					print('%d %s' % (i, write))
-					# result.append(write)
+					result.append([root,write])
 			else:
 				if filename.lower() in file.lower():
 					i = i + 1
 					write = os.path.join(root, file)
 					print('%d %s' % (i, write))
-					# result.append(write)
+					result.append([root,write])
+	asks = input('Open? [op+number / number / any]').split(' ')
+	if result:
+		try:
+			index = int(asks[0])
+			os.startfile(result[0])
+		except:
+			if asks[0] == 'op':
+				try:
+					index2 = int(asks[1])
+					filetype = result[1][index2].split('.')[-1]
+					if filetype in open_dic:
+						os.system('start ' + open_dic[filetype] + ' ' + result[1][index2])
+					else:
+						os.system('start ' + result[1][index2])
+				except Exception as e:
+					print(e)
+			elif asks == 'op':
+				os.system('start '+result[1])
+		else:
+			if ask == 'y' or ask == '1':
+				os.startfile(result[0])
+	
 
 def find_dir(pan,dirname,mode='',showlen=1):
 	i = 0
@@ -111,42 +124,92 @@ def find_dir(pan,dirname,mode='',showlen=1):
 				index = int(ask)
 				os.startfile(result[index-1])
 			except:
-				pass
+				if ask == 'y':
+					os.startfile(result[0])
+				else:
+					pass
 		else:
-			if ask == 'y':
+			if ask == 'y' or ask == '1':
 				os.startfile(result[0])
+
+# def speech.timelog():
+	# cur_time = datetime.datetime.now()  # 数据类型为：datetime
+	# now = str(cur_time).split('.')[0]
+	# date = ''.join(now.split(' ')[0].split('-'))
+	# time = ''.join(now.split(' ')[1].split(':'))
+	# t = date + time
+	# return t
+
+
+	
+
 		
+# 打招呼
+speech = ghuman.Speech()
+sayhi = {1:'morning',2:'beforenoon',3:'noon',4:'afternoon',5:'night',6:'midnight'}
+timenum = speech.timelog()[8:-2]
 
-# m = PyMouse()
-# k = PyKeyboard()
-# def # smallize():
-# k.press_key(k.windows_l_key)
-# k.press_key(k.down_key)
-# k.release_key(k.down_key)
-# k.release_key(k.windows_l_key)
+if int(timenum) in range(400,900):
+	timecode = 1
+elif int(timenum) in range(900,1130):
+	timecode = 2
+elif int(timenum) in range(1130,1300):
+	timecode = 3
+elif int(timenum) in range(1300,1730):
+	timecode = 4
+elif int(timenum) in range(1730,2330):
+	timecode = 5
+else:
+	timecode = 6
 
-def get_time():
-	cur_time = datetime.datetime.now()  # 数据类型为：datetime
-	now = str(cur_time).split('.')[0]
-	date = ''.join(now.split(' ')[0].split('-'))
-	time = ''.join(now.split(' ')[1].split(':'))
-	t = date + time
-	return t
+try:
+	moji = spider.Moji()
+	wea = moji.now
+	speech.say('[hi]'+sayhi[timecode])
+	speech.say('gina_serving')
+	# say(speak('现在天气' + wea[0] + ',' + wea[1] + '℃',name='[Weather]'+speech.timelog()),dir='')
+	text = '现在天气' + wea[0] + ',' + wea[1] + '℃'
+	os.system('CLS')
+	# 检测音库是否已有
+	with open('tts_logs\\log_dic.txt','r',encoding='utf-8') as f:
+		log_list = f.readlines()
+		logname = []
+		logcontent = []
+		for l in log_list:
+			if l[0] != '#':
+				aaa = l.split('\t')[0]
+				bbb = '\t'.join(l.split('\t')[1:]).strip()
+				if bbb not in logcontent:
+					logcontent.append(bbb)
+					logname.append(aaa)
+	if text in logcontent:
+		speech.say('tts_logs\\'+logname[logcontent.index(text)],dir='',t='x')
+	else:
+		log_name = speech.speak(text,name='tts_logs\\[Weather]'+speech.timelog(),dir='',t='x').split('\\')[-1]
+		with open('tts_logs\\log_dic.txt','a',encoding='utf-8') as f:
+			f.write(log_name+'\t'+text+'\n')
+	os.system('CLS')
+	print('现在【%s,%s℃】'%(wea[0],wea[1]))
+except Exception as e:
+	print('获取天气遇到问题。')
+	# speech.say('[hi]'+sayhi[timecode])
+	# speech.say('gina_serving')
+	print(e)
 
 
-def play_music(path,f=22050):
-	pygame.mixer.init(frequency=f)
-	pygame.mixer.music.load(path)
-	pygame.mixer.music.play()
 
 
 
-play_music(a(ini.bgm),16000)
+
+# play_music(a(ini.bgm),16000,'x')
+
 gidata_dic = a(ini.gidata)
 web_dic = a(ini.webdic)
 order_collection = a(ini.orders)
 id = a(ini.id)[0]
 id_key = a(ini.id)[1]
+
+
 
 # month = {'Jan':'01','Feb':'02','Mar':'03','Apr':'04','May':'05','Jun':'06',
 # 'Jul':'07','Aug':'08','Sep':'09','Oct':'10','Nov':'11','Dec':'12'}
@@ -170,7 +233,7 @@ for key in cmddic:
 	cmdqk.append(key)
 
 ask = ''
-os.system('CLS')  #清屏
+# os.system('CLS')  #清屏
 while ask != 'quit':
 	try:
 		Round = 0
@@ -180,19 +243,32 @@ while ask != 'quit':
 			p = os.getcwd()
 			c = os.path.basename(__file__)
 			# print(p+'\\'+c)
+			# say('ok')
+			speech.say('restart',t='x')
 			os.system('python '+p+'\\'+c)
 			print('\n')
 			Round = 0
+		
+		elif ask == 'speak':
+			s = input('You Say: ')
+			speak(s)
+			# say('AAAAAA')
+		
 		elif ask == 'help':
 			for i in quick_list:
 				# print(orders[2][i],'->',lnk[i])
 				print(i)
 			print('\n')
-		elif ask == 'id':
-			print('')
+		elif ask == '==':
+			inp = input('Calculator: ')
+			while inp != 'q':
+				result = eval(inp)
+				print('Result:',result)
+				print('-'*50)
+				inp = input('Calculator: ')
 		# 运行py程序
 		elif ask == 'tag':
-			os.system('python D:/#My/python_work/Data_Technology/MyTagSystem.py')
+			os.system('start python D:\\#My\\GiData\\Creation\\Projects\\Python\\Gina\\GiFun\\GData\\Tags\\Tags_win.py')
 			print('\n')
 		
 		elif ask[:3] == 'ts ':
@@ -264,6 +340,14 @@ while ask != 'quit':
 		elif ask + '.lnk' in quick_list:
 			# smallize()
 			path = 'start C:/quickstart/' + ask + '.lnk'
+			speech.say('oky')
+			time.sleep(0.5)
+			# say(['opening',ask])
+			speech.say('opening')
+			try:
+				speech.say(ask)
+			except:
+				print('没有对应语音包。')
 			os.system(path)
 
 		# 打开文件夹
@@ -282,8 +366,13 @@ while ask != 'quit':
 			os.startfile(r'..')
 		elif ask == 'data':
 			pan = 'D:\\#My\\GiData'
+			speech.say('fddir',t='x')
 			find_it = input('Find: ')
 			find_dir(pan,find_it,showlen=3)
+		elif ask == 'dataf':
+			pan = 'D:\\#My\\GiData'
+			find_it = input('Find: ')
+			find_file(pan,find_it)
 		elif ask == 'ddata':
 			pan = 'D:\\'
 			find_it = input('Find: ')
@@ -297,7 +386,7 @@ while ask != 'quit':
 
 		elif ask == 'test':
 			# smallize()
-			os.system('start ' + r'C:\MySoftware\Notepad++/notepad++.exe D:/#My/python_work/test.py')
+			os.system('start ' + r'C:\MySoftware\Notepad++/notepad++.exe D:\#My\GiData\Creation\Projects\Python\Test\test.py')
 
 		elif ask == 'qs':
 			# smallize()
@@ -313,9 +402,7 @@ while ask != 'quit':
 			# smallize()
 			os.startfile('D:/#My')
 
-		elif ask == 'down':
-			# smallize()
-			os.startfile('D:/#My/裆漏的')
+		
 
 		elif ask == 't0':
 			# smallize()
@@ -335,7 +422,7 @@ while ask != 'quit':
 			mode = input('Sth:')
 			while mode != 'q':
 				if mode == 'new':
-					t = get_time()
+					t = speech.timelog()
 					tname = dir + t + '.txt'
 					with open(tname, 'w') as f:
 						thing = '##  ##\n@..@\n$\n'
@@ -355,9 +442,7 @@ while ask != 'quit':
 						tag = tags.split('.')
 						text = stuff.split('$')[-1].strip()
 						timet = f.split('.txt')[0]
-						time = timet[:4] + '-' + timet[4:6] + '-' + timet[6:8] + ' ' + timet[8:10] + ':' + timet[
-																										   10:12] + ':' + timet[
-																														  12:]
+						time = timet[:4] + '-' + timet[4:6] + '-' + timet[6:8] + ' ' + timet[8:10] + ':' + timet[10:12] + ':' + timet[12:]
 						print('=' * 16 + str(flist.index(f)) + '=' * 16)
 						print('Title: ' + title)
 						print('Time: ' + time)
@@ -375,60 +460,37 @@ while ask != 'quit':
 
 
 		# 打开网页
+		elif ask == 'mp4':
+			# 根据URL下载视频：支持逼站等
+			url = input('URL: ')
+			os.system('you-get -i ' + url)
+			while url != 'q':
+				url = input('>>>')
+				os.system(url)
+			os.startfile(os.getcwd())
 		elif ask in webs:
 			# smallize()
 			os.system('start C:/quickstart/gg.lnk ' + web_dic[ask])
 
-		# elif ask in bs_webs:
-		# # smallize()
-		# url = '"start C:/MySoftware/360se6/Application/360se.exe" '+bsweb_dic[ask]
-		# os.system(url)
 
 		elif ask[:3] == 'bd ':
 			# smallize()
+			say('baidu',t='x')
 			bdurl = 'start C:/quickstart/gg.lnk https://www.baidu.com/s?wd=' + ask[3:]
 			os.system(bdurl)
 
-			# elif ask in planelist:
-			# account = ''
-			# t = time.localtime(time.time())
-			# adrs = plane[ask]
-			# now = time.asctime(t)
-			# nowtime = now[-4:]+'-'+month[now[4:7]]+'-'+now[8:10]+' '+now[11:19]
-			# # print(now)
-			# print(nowtime)
-			# for i in range(10):
-			# ii = random.sample(range(9),1)
-			# account = account + str(ii[0])
-			# account = account+'@qq.com'
-			# print(account)
-			# pyperclip.copy(account)
-			# url = '"start C:/quickstart/gg.lnk" '+adrs
-			# txt = '\n账号：'+account+'\n注册时间：'+nowtime+'\n地址：'
-			# f = open('D:/#My/python_work/Data_Technology/jiih.txt','a')
-			# f.write('>>>'+planename[ask]+txt)
-			# f.close()
-			# os.system(url)
-			# os.system('D:/#My/python_work/Data_Technology/jiih.txt')
-			'''
-			bp.upload(localpath='D:/#My/python_work/Data_Technology/jiih.txt',remotepath='jiih/jiih.txt')
-			print('上传完成')
-			'''
-		elif ask == 'heart':
-			# smallize()
-			ms = PyMouse()
-			kb = PyKeyboard()
-			os.system('start C:/quickstart/wyy.lnk')
-			time.sleep(20)
-			ms.click(350, 532, 1, 1)
-			time.sleep(1)
-			kb.press_keys([kb.menu_key, 'q'])
+		elif ask == 'home':
+			os.system('start C:/quickstart/gg.lnk ' + 'https://zacharychiu.github.io')
+		
+		elif ask == 'webs':
+			os.system('start C:/quickstart/gg.lnk ' + 'https://zacharychiu.github.io/webs.html')
 
 		elif ask == 'asd':
 			# k.press_key(k.alt_l_key)
 			# k.press_key(k.enter_key)
 			# k.release_key(k.enter_key)
 			# k.release_key(k.alt_l_key)
+			speech.say('zhuangbility')
 			os.system('color 02')
 			nums = ''
 			lines = 1000
@@ -437,6 +499,7 @@ while ask != 'quit':
 			time.sleep(0.4)
 			print('...')
 			time.sleep(0.3)
+			# say('check')
 
 			for ts in range(lines):
 				lenth = random.randint(10, 161)
@@ -457,15 +520,15 @@ while ask != 'quit':
 			time.sleep(0.4)
 			for i in range(21):
 				time.sleep(0.4)
-				print('\r正在分析环境：{0}{1}%'.format('▉' * i, (i * 5)), end='')
+				print('\r正在分析环境：{0}  {1}%'.format('▉' * i, (i * 5)), end='')
 			print('\n')
 			for i in range(21):
 				time.sleep(0.3)
-				print('\r正在计算塌陷方程：{0}{1}%'.format('▉' * i, (i * 5)), end='')
+				print('\r正在计算塌陷方程：{0}  {1}%'.format('▉' * i, (i * 5)), end='')
 			print('\n')
 			for i in range(21):
 				time.sleep(0.3)
-				print('\r病毒程序写入中：{0}{1}%'.format('▉' * i, (i * 5)), end='')
+				print('\r病毒程序写入中：{0}  {1}%'.format('▉' * i, (i * 5)), end='')
 			time.sleep(0.5)
 			print('\nSuccess...\n\n\n')
 			time.sleep(1)
@@ -491,6 +554,8 @@ while ask != 'quit':
 		elif ask == 'sleep':
 			confirm = input('待会儿见咯~')
 			os.system('rundll32 powrprof.dll,SetSuspendState')
+		elif ask == 'web':
+			os.system('start C:\\quickstart\\gg.lnk https://zacharychiu.github.io/')
 		elif ask == 'cxk':
 			rd = ''
 			for i in range(12):
@@ -498,7 +563,7 @@ while ask != 'quit':
 				rd += str(n)
 			pyperclip.copy(rd + '@qq.com')
 			print(rd)
-			os.system('start C:\\quickstart\\gg.lnk http://cxkssr.xyz/auth/register')
+			os.system('start C:\\quickstart\\gg.lnk https://cxkssr.xyz/auth/register')
 		elif ask == 'cxkv':
 			rd = ''
 			for i in range(12):
@@ -535,30 +600,32 @@ while ask != 'quit':
 							length = float(audio.info.length)
 							time.sleep(length)
 				num = input('Index:')
-		elif ask == 'tem':
-			print('emm...')
-			print(have_speech('我叫姬娜你可以亲切地称呼我为小姬姬'))
 
 		elif ask not in order_collection:
-			name = 'tts_logs\\'+str(get_time()) + '.mp3'
+			name = 'tts_logs\\'+str(speech.timelog()) + '.mp3'
 			ans = chatme.chat(ask)
-			print('$ 姬娜:', ans, '\n')
-			h = have_speech(ans)
-			if h:
-				play_music('tts_logs\\'+h+'.mp3',16000)
+			
+			
+			# 检测音库是否已有
+			with open('tts_logs\\log_dic.txt','r',encoding='utf-8') as f:
+				log_list = f.readlines()
+				logname = []
+				logcontent = []
+				for l in log_list:
+					if l[0] != '#':
+						aaa = l.split('\t')[0]
+						bbb = '\t'.join(l.split('\t')[1:]).strip()
+						if bbb not in logcontent:
+							logcontent.append(bbb)
+							logname.append(aaa)
+			if ans in logcontent:
+				speech.say('tts_logs\\'+logname[logcontent.index(ans)],dir='',t='x')
 			else:
-				sp.readit(ans,name)
-				os.system('clear')
-				play_music(name,16000)
-				with open('tts_recoder.csv','a',encoding='utf-8') as f:
-					writer = csv.writer(f)
-					writer.writerow([name.split('\\')[-1].split('.')[0],ans])
-
-
-		# cash_name_list = os.listdir('speech_cash')
-		# for c in cash_name_list:
-		# cash_path = 'speech_cash\\'+c
-		# os.remove(cash_path)
+				log_name = speech.speak(ans,name='tts_logs\\[Chat]'+speech.timelog(),dir='',t='x').split('\\')[-1]
+				with open('tts_logs\\log_dic.txt','a',encoding='utf-8') as f:
+					f.write(log_name+'\t'+ans+'\n')
+				print('-'*50)
+			print('$ 姬娜:', ans, '\n')
 	except Exception as e:
 		print(e.args)
 		print('...\n')
