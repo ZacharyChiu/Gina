@@ -79,6 +79,8 @@ class Speech():
 			# delay为x时，不等待
 			d = 0
 		time.sleep(d)
+		# print('Playing:[%s]'%(str(int(d)+1)))
+		
 	
 	def say(self,oo,t=0,dir='xxx'):
 		# oo为音频文件名（不带后缀），oo可以为列表
@@ -205,7 +207,33 @@ class Speech():
 			return dir + '\\' + name
 
 
+def test():
+	content = '你是啥玩意儿？'
+	speech = Speech()
+
+	# 检测音库是否已有
+	with open('log_dic.txt','r',encoding='utf-8') as f:
+		log_list = f.readlines()
+		logname = []
+		logcontent = []
+		for l in log_list:
+			if l[0] != '#':
+				aaa = l.split('\t')[0]
+				bbb = '\t'.join(l.split('\t')[1:]).strip()
+				if bbb not in logcontent:
+					logcontent.append(bbb)
+					logname.append(aaa)
+	if content in logcontent:
+		speech.say(logname[logcontent.index(content)],dir='')
+	else:
+		log_name = speech.speak(content,name=speech.timelog(),dir='').split('\\')[-1]
+		with open('log_dic.txt','a',encoding='utf-8') as f:
+			f.write(log_name+'\t'+content+'\n')
+		print('-'*50)
+	print(content)
+
 if __name__ == "__main__":
 	# print(os.getcwd())
-	speech = Speech()
-	speech.speak('你爱我吗',dir='')
+	test()
+	test()
+	test()
